@@ -1,5 +1,13 @@
-extends layout
+extends ../node_modules/jade-bootstrap/_bootstrap
+head
+  title=title
+block body
+  +navbar("ECS Movies", "dropdown_menu")
+    +nav_item("/", "active") Home
+    +nav_item("/list") Stock
 
-block content
-  h1= title
-  p Welcome to #{title}
+.container
+  h1 #{title}
+  .container
+    +carousel("SampleVideos",images )
+  p Welcome to #{title}. We have an excellent collection of videos in stock for you.
