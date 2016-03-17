@@ -1,13 +1,38 @@
 extends ../node_modules/jade-bootstrap/_bootstrap
-head
-  title=title
-block body
-  +navbar("ECS Movies", "dropdown_menu")
-    +nav_item("/", "active") Home
-    +nav_item("/list") Stock
 
-  .container
-    h1 #{title}
-    .container
-      p= p
-    p Welcome to #{title}. We have an excellent collection of videos in stock for you.
+head
+	title=title
+block body
+	+tab-list(["Home","Search"],0)
+		+tab("Home","active")
+			h1 #{title}
+			p Welcome to #{title}. We have an excellent collection of videos in stock for you.
+		+tab("Search")
+			+input("text","txtName","Search","Title of Letter")
+			+icon-btn("search")
+
+	
+
+	.container
+		link(rel='stylesheet', href='/stylesheets/style.css')
+
+		.container
+				
+		//list group
+		
+		
+		
+		+list-group-custom()
+			-
+			each val in queryResult
+				+list-group-item(val,"")
+					h4.list-group-item-heading=val
+
+		
+		#result
+			//script(type='text/javascript').
+				//var xml=queryResult;
+				//xml.getElementsByTagName("title")[0].childNodes[0].nodeValue;
+				//document.getElementById("result").innerHTML = xml;
+			p=queryResult			
+			

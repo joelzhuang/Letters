@@ -1,8 +1,25 @@
+/**
 body {
   padding: 50px;
-  font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+  font: 14px "Times New Roman", Times, serif;
+  color: #FF0000;
 }
 
 a {
-  color: #00B7FF;
+  color: #FF0000;
+**/
+
+#result{
+	background-color: lightblue;
+  color: #FF0000;
+}
+
+title{
+	color: black;
+	display: block;
+}
+
+name{
+	color: black;
+	display: block;
 }
