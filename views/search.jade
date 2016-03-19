@@ -17,9 +17,18 @@ block body
 	h1 #{title}
 	
 	.container
-		link(rel='stylesheet', href='/stylesheets/style.css')
-
+		
+		+input("text","titleTxt","Title","Title of Document")
+		+a-btn-success("#") Search  
+			span
+				+icon("search")
+		p OR
+		+input("text","authorTxt","Author","Author of Document")
+		p OR
+		+input("text","wordTxt","Word","Find Text in Document")
+		
 		.container
+		link(rel='stylesheet', href='/stylesheets/style.css')
 				
 		
 		#result
