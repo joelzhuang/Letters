@@ -40,12 +40,40 @@ function (err,body) {
 router.get("/:author/:ftype/:xml", function(req, res, next){
 		var author = req.params.author;
 		var ftype = req.params.ftype;			//for params if you want to change the page
-		var author = req.query.author;		//for search query, if you dont want to changes
+		var xml = req.params.xml;		//for search query, if you dont want to changes
 		
-		//need to check if this method works
-		//as this brackets above are not formatted correctly
 		console.log(author);
 		console.log(ftype);
+		console.log(xml);
+		
+		
+		client.execute("XQUERY declare default element namespace 'http://www.tei-c.org/ns/1.0'; " + 
+		"doc('Colenso/" + author + "/" + ftype + "/" + xml + "')",
+		function (err,xmlFile){
+			if(err){
+				console.log(err);
+			}
+			res.render('file',{ title: 'file', queryResult: xmlFile.result});
+		  
+		});
+		
+		//function for passing in the file that was returned from the query
+		
+		
+});
+
+
+router.get("/search",function(req,res,next){
+ 
+	 res.render('search',{title: 'Search Query'});
+  
+});
+
+
+router.get("/add",function(req,res,next){
+ 
+	 res.render('add',{title: 'Add XML Document'});
+  
 });
 
 

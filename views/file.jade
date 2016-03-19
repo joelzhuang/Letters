@@ -1,0 +1,25 @@
+extends ../node_modules/jade-bootstrap/_bootstrap
+
+head
+	title=title
+block body
+	+navbar("Colenso","dropdown_menu")
+		+navbar("Colenso","dropdown_menu")
+		+nav_item("/","active") Home  
+			span
+				+icon("home")
+		+nav_item("/search") Search  
+			span
+				+icon("search")
+		+nav_item("/add") Add  
+			span
+				+icon("plus")
+	
+	.container
+		link(rel='stylesheet', href='/stylesheets/style.css')
+
+		.container
+				
+		
+		#result
+			p !{queryResult}
