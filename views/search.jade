@@ -17,16 +17,26 @@ block body
 	h1 #{title}
 	
 	.container
+		//need to think of how to push search button next to input
+		//need to know how to change the sizes of them.
+		//NEED TO MAKE SEARCH QUERY WORK
 		
-		+input("text","titleTxt","Title","Title of Document")
-		+a-btn-success("#") Search  
-			span
-				+icon("search")
-		p OR
-		+input("text","authorTxt","Author","Author of Document")
-		p OR
-		+input("text","wordTxt","Word","Find Text in Document")
+		h4 Title of Document
+		form(action="/search", method="get")
+			input(type="text",name="title",placeholder="Enter title")
+			input(type="submit",value="search")
 		
+		h3 OR
+		h4 Author of Document
+		form(action="/search", method="get")
+			input(type="text",name="author",placeholder="Enter Author")
+			input(type="submit",value="search")
+		h3 OR
+		h4 Find text in Document
+		form(action="/search", method="get")
+			input(type="text",name="text",placeholder="Enter Text")
+			input(type="submit",value="search")
+			
 		.container
 		link(rel='stylesheet', href='/stylesheets/style.css')
 				

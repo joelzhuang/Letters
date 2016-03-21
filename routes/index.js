@@ -62,12 +62,32 @@ router.get("/:author/:ftype/:xml", function(req, res, next){
 		
 });
 
-
 router.get("/search",function(req,res,next){
- 
-	 res.render('search',{title: 'Search Query'});
+	var title = req.query.title;
+	var author = req.query.author;
+	var text = req.query.text;
+	
+	//REGEX???: (*[matches(., "Hooker")])
+	//checks which variable is defined, and does the query that relates to the defined variable
+	if(title){
+		console.log(title);
+		client.execute("XQUERY declare namespace tei='http://www.tei-c.org/ns/1.0'; " +
+		"for $n in (collection('Colenso/Hooker/')//tei:p[position() = 1])\n" +
+		"return db:path($n)",
+		function(err,res) { if(!err) console.log(res.result)} )
+		
+	} else if (author){
+		console.log(author);
+	} else if (text){
+		console.log(text);
+	}
+  
+	 
+	res.render('search',{title: 'Search Query'});
   
 });
+
+
 
 
 router.get("/add",function(req,res,next){

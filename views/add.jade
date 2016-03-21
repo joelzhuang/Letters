@@ -2,6 +2,7 @@ extends ../node_modules/jade-bootstrap/_bootstrap
 
 head
 	title=title
+	link(rel='stylesheet', href='/stylesheets/style.css')
 block body
 	+navbar("Colenso","dropdown_menu")
 		+nav_item("/","active") Home  
@@ -17,7 +18,7 @@ block body
 	h3 #{title}
 	
 	.container
-		link(rel='stylesheet', href='/stylesheets/style.css')
+		
 
 		.container
 				
