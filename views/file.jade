@@ -5,7 +5,7 @@ head
 	link(rel='stylesheet', href='/stylesheets/style.css')
 block body
 	+navbar("Colenso","dropdown_menu")
-		+nav_item("/","active") Home  
+		+nav_item("/") Home  
 			span
 				+icon("home")
 		+nav_item("/search") Search  
@@ -16,6 +16,12 @@ block body
 				+icon("plus")
 	
 	.container
+		h2
+			span 
+				+icon("download")
+				a(href="/download/"+downLink download) Download
+		br
+
 
 		.container
 				

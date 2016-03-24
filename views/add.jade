@@ -5,23 +5,31 @@ head
 	link(rel='stylesheet', href='/stylesheets/style.css')
 block body
 	+navbar("Colenso","dropdown_menu")
-		+nav_item("/","active") Home  
+		+nav_item("/") Home  
 			span
 				+icon("home")
 		+nav_item("/search") Search  
 			span
 				+icon("search")
-		+nav_item("/add") Add  
+		+nav_item("/add","active") Add  
 			span
 				+icon("plus")
 		
 	h3 #{title}
 	
 	.container
+		if(error) 
+			//if(error == true)
+				p there is an error
+				p error	
+			if (error == false) 
+				p File has been uploaded successfully.
+			
+		
 		
 
-		.container
-				
-		
-		#result
-			p !{queryResult}
+		form(action="/add", method="post", enctype="multipart/form-data")
+			input(type="file" value="Choose XML file to Upload" name="fileUpload" accept=".xml")
+			p
+			input(type="submit" value="Upload")
+

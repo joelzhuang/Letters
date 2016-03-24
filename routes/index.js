@@ -1,6 +1,15 @@
+
+//for uploading
+var multer = require('multer');
+var upload = multer({dest: './uploads'});
+
+//for renaming files
+var fs = require('fs');
+
 var express = require('express');
 var router = express.Router();
 var cheerio = require('cheerio');
+
 var basex = require('basex');
 var client = new basex.Session("127.0.0.1", 1984, "admin", "admin");
 client.execute("open Colenso");
@@ -22,6 +31,7 @@ client.execute("XQUERY db:list('Colenso')",
 function (err,body) {
 	//var names= [];
 	var names = body.result.match(/[^\r\n]+/g);
+	var author, ftype, xmlFile; 
 	//names.shift();
 	/**
 	var xmlFiles =[];
@@ -46,14 +56,14 @@ router.get("/:author/:ftype/:xml", function(req, res, next){
 		console.log(ftype);
 		console.log(xml);
 		
-		
+		var url = author + "/" + ftype + "/" + xml; 
 		client.execute("XQUERY declare default element namespace 'http://www.tei-c.org/ns/1.0'; " + 
 		"doc('Colenso/" + author + "/" + ftype + "/" + xml + "')",
 		function (err,xmlFile){
 			if(err){
 				console.log(err);
 			}
-			res.render('file',{ title: 'file', queryResult: xmlFile.result});
+			res.render('file',{ title: 'file', queryResult: xmlFile.result, downLink:url});
 		  
 		});
 		
@@ -62,28 +72,46 @@ router.get("/:author/:ftype/:xml", function(req, res, next){
 		
 });
 
+router.get("/download/:author/:ftype/:xml",function(req,res,next){
+		var author = req.params.author;
+		var ftype = req.params.ftype;	
+		var xml = req.params.xml;
+		console.log("URL");
+		client.execute("XQUERY declare default element namespace 'http://www.tei-c.org/ns/1.0'; " + 
+		"doc('Colenso/" + author + "/" + ftype + "/" + xml +"')",
+		function (err,xmlFile){
+			if(err){
+				console.log(err);
+			}
+			res.send(xmlFile.result);
+		  
+		});
+		
+});
+
 router.get("/search",function(req,res,next){
 	var title = req.query.title;
 	var author = req.query.author;
 	var text = req.query.text;
-	
+	var search = [];
 	//REGEX???: (*[matches(., "Hooker")])
 	//checks which variable is defined, and does the query that relates to the defined variable
 	if(title){
 		console.log(title);
-		client.execute("XQUERY declare namespace tei='http://www.tei-c.org/ns/1.0'; " +
-		"for $n in (collection('Colenso/Hooker/')//tei:p[position() = 1])\n" +
-		"return db:path($n)",
-		function(err,res) { if(!err) console.log(res.result)} )
+		client.execute("XQUERY declare default element namespace 'http://www.tei-c.org/ns/1.0'; for $t in (//title) where matches($t,'" + title + "','i') return db:path($t)",   
+		function(err,body) {  
+			search = body.result.match(/[^\r\n]+/g);
+			console.log("result"+search);
+			res.render('search',{title: 'Search Query', searchResult: search});
+		});
 		
 	} else if (author){
 		console.log(author);
 	} else if (text){
 		console.log(text);
+	} else {
+		res.render('search',{title: 'Search Query'});
 	}
-  
-	 
-	res.render('search',{title: 'Search Query'});
   
 });
 
@@ -91,12 +119,49 @@ router.get("/search",function(req,res,next){
 
 
 router.get("/add",function(req,res,next){
- 
 	 res.render('add',{title: 'Add XML Document'});
   
 });
 
+router.post("/add", upload.single('fileUpload'),function(req,res,next){
+	console.log(req.file);
+	//getting current directory
+	var directory = process.env.PWD;
+	var origName = req.file.originalname;
+	var hasError = false;
 
+	//renaming the file to its original name
+	fs.rename(req.file.path, 'uploads/' + origName, 
+		function(err){
+			//if(err){
+			//	hasError = true;
+				console.log("RENAMING ERROR")
+				console.log(err);
+			//	res.render('add',{title:'Failed to find the file.', error:err});
+			//}
+		}
+	);
+
+	//adding the file to the database
+	client.execute("ADD " + directory + "/uploads/" + origName , 
+		function(err){
+			//if(err){
+			//	hasError = true;
+				console.log("ADDING FILE TO DATABASE ERROR")
+				console.log(err);
+			//	res.render('add',{title:'Failed to Upload XML File', error:err});
+			//}
+	});
+
+	//if(hasError){
+		res.render('add',{title:'Uploaded'});
+	//}
+
+
+
+		
+
+});
 
 
 module.exports = router;

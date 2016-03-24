@@ -4,10 +4,10 @@ head
 	title=title
 block body
 	+navbar("Colenso","dropdown_menu")
-		+nav_item("/","active") Home  
+		+nav_item("/") Home  
 			span
 				+icon("home")
-		+nav_item("/search") Search  
+		+nav_item("/search","active") Search  
 			span
 				+icon("search")
 		+nav_item("/add") Add  
@@ -30,6 +30,11 @@ block body
 		h4 Author of Document
 		form(action="/search", method="get")
 			input(type="text",name="author",placeholder="Enter Author")
+			br
+			br
+			+radio-toggle-default("radOptions6",[{caption:"None"},{caption:"AND"},{caption:"NOT"}],0)
+			br
+			br
 			input(type="submit",value="search")
 		h3 OR
 		h4 Find text in Document
@@ -37,9 +42,12 @@ block body
 			input(type="text",name="text",placeholder="Enter Text")
 			input(type="submit",value="search")
 			
+		if searchResult
+			+list-group-custom()
+				-
+				each val in searchResult
+					+list-group-item(val,"")
+						h4.list-group-item-heading=val	
+		
 		.container
 		link(rel='stylesheet', href='/stylesheets/style.css')
-				
-		
-		#result
-			p !{queryResult}
