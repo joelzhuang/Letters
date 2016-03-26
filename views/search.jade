@@ -20,34 +20,56 @@ block body
 		//need to think of how to push search button next to input
 		//need to know how to change the sizes of them.
 		//NEED TO MAKE SEARCH QUERY WORK
-		
-		h4 Title of Document
+
+		+panel-info("Title of document")
+			p To find the title of the document, simply enter in the text box below
+			p E.g. Hooker 
+
 		form(action="/search", method="get")
-			input(type="text",name="title",placeholder="Enter title")
+			input(type="text",name="title",placeholder="Enter title",value=titleInput)
 			input(type="submit",value="search")
 		
 		h3 OR
-		h4 Author of Document
+
+		+panel-info("BaseX Query")
+			p This is only for XQUERY / XPATH queries
+			p The query results will return a path to the file(s) that match your query
+			p E.g. for $t in (//title) where matches($t,'hooker','i') 
+
+
 		form(action="/search", method="get")
-			input(type="text",name="author",placeholder="Enter Author")
-			br
-			br
-			+radio-toggle-default("radOptions6",[{caption:"None"},{caption:"AND"},{caption:"NOT"}],0)
-			br
-			br
+			input(type="text",name="Bquery",placeholder="Enter BaseX Query here", value=queryInput)
 			input(type="submit",value="search")
+		
+		
 		h3 OR
-		h4 Find text in Document
-		form(action="/search", method="get")
-			input(type="text",name="text",placeholder="Enter Text")
-			input(type="submit",value="search")
+		
+		+panel-info("Find text in Document")
+			p Please input your text within quote marks ' '. 
 			
+			p Logic operators are replaced as follows:
+			//p AND = ftand NOT = ftnot OR = ftor
+			+table([],[["AND = ftand","NOT = ftnot","OR = ftor"]],"table-striped table-bordered")
+			p E.g. 'hooker' ftand 'haast'
+
+		form(action="/search", method="get")
+			input(type="text",name="text",placeholder="Enter Text here", value=textInput)
+			input(type="submit",value="search")
+		
+		br
+		br
+
 		if searchResult
+			h3 Results
 			+list-group-custom()
 				-
 				each val in searchResult
 					+list-group-item(val,"")
 						h4.list-group-item-heading=val	
+
+		else
+			br
+			p(style="color:red;") There are  no results to display
 		
 		.container
 		link(rel='stylesheet', href='/stylesheets/style.css')

@@ -31,6 +31,7 @@ client.execute("XQUERY db:list('Colenso')",
 function (err,body) {
 	//var names= [];
 	var names = body.result.match(/[^\r\n]+/g);
+	names.sort();
 	var author, ftype, xmlFile; 
 	//names.shift();
 	/**
@@ -91,24 +92,39 @@ router.get("/download/:author/:ftype/:xml",function(req,res,next){
 
 router.get("/search",function(req,res,next){
 	var title = req.query.title;
-	var author = req.query.author;
+	var Bquery = req.query.Bquery;
 	var text = req.query.text;
 	var search = [];
 	//REGEX???: (*[matches(., "Hooker")])
 	//checks which variable is defined, and does the query that relates to the defined variable
+
+	//using ftand
+	//declare default element namespace 'http://www.tei-c.org/ns/1.0'; for $t in *[.//text() contains text 'Hooker' ftand 'Haast']return db:path($t)
 	if(title){
 		console.log(title);
 		client.execute("XQUERY declare default element namespace 'http://www.tei-c.org/ns/1.0'; for $t in (//title) where matches($t,'" + title + "','i') return db:path($t)",   
 		function(err,body) {  
 			search = body.result.match(/[^\r\n]+/g);
 			console.log("result"+search);
-			res.render('search',{title: 'Search Query', searchResult: search});
+			res.render('search',{title: 'Search Query', searchResult: search, titleInput:title});
 		});
 		
-	} else if (author){
-		console.log(author);
+	} else if (Bquery){
+		console.log(Bquery);
+		client.execute("XQUERY declare default element namespace 'http://www.tei-c.org/ns/1.0';" + Bquery + "return db:path($t)",   
+		function(err,body) {  
+			search = body.result.match(/[^\r\n]+/g);
+			console.log("result"+search);
+			res.render('search',{title: 'Search Query', searchResult: search, queryInput:Bquery});
+		});
+		
 	} else if (text){
 		console.log(text);
+		client.execute("XQUERY declare default element namespace 'http://www.tei-c.org/ns/1.0'; for $t in *[.//text() contains text " + text + "]return db:path($t)",
+		function(err,body) {  
+			search = body.result.match(/[^\r\n]+/g);
+			res.render('search',{title: 'Search Query', searchResult: search, textInput: text});
+		});
 	} else {
 		res.render('search',{title: 'Search Query'});
 	}
