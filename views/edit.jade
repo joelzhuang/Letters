@@ -1,0 +1,39 @@
+extends ../node_modules/jade-bootstrap/_bootstrap
+
+head
+	title=title
+	link(rel='stylesheet', href='/stylesheets/style.css')
+block body
+	+navbar("Colenso","dropdown_menu")
+		+nav_item("/") Home  
+			span
+				+icon("home")
+		+nav_item("/search") Search  
+			span
+				+icon("search")
+		+nav_item("/add") Add  
+			span
+				+icon("plus")
+	
+	.container
+		h3
+			span 
+				+icon("remove-circle")
+				a(href="/" + downLink) Cancel
+		br
+
+
+		.container
+		//delete from database
+		//readd to database already can be downloaded in xml and reuploaded
+		.form-group
+			form(action="/save/"+downLink, method="post")
+				textarea(name="fileEdit", rows="30", class="form-control")
+					!{queryResult}
+
+				+submit("Save")
+
+		form(action="/search", method="get")
+			input(type="text",name="editText",value = queryResult)
+			input(type="submit",value="search")
+			//p !{queryResult}

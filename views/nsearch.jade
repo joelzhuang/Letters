@@ -17,15 +17,19 @@ block body
 	h1 #{title}
 	
 	.container
-		+a-btn-success("/nestedSearch") Switch to Nested Searching
+		+a-btn-success("/search") Switch to Normal Searching
 		br
 		br
+
+		//need to think of how to push search button next to input
+		//need to know how to change the sizes of them.
+		//NEED TO MAKE SEARCH QUERY WORK
 
 		+panel-info("Title of document")
 			p To find the title of the document, simply enter in the text box below
 			p E.g. Hooker 
 
-		form(action="/search", method="get")
+		form(action="/nestedSearch", method="get")
 			input(type="text",name="title",placeholder="Enter title",value=titleInput)
 			input(type="submit",value="search")
 		
