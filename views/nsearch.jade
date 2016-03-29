@@ -14,23 +14,35 @@ block body
 			span
 				+icon("plus")
 		
-	h1 #{title}
+	
 	
 	.container
-		+a-btn-success("/search") Switch to Normal Searching
-		br
-		br
 
-		//need to think of how to push search button next to input
-		//need to know how to change the sizes of them.
-		//NEED TO MAKE SEARCH QUERY WORK
+		.row
+			.col-xs-8
+				+a-btn-success("/search") Switch to Normal Searching
+			.col-xs-4
+				h3
+					span 
+						+icon("download")
+						a(href="/downloads" download) Download All
+		
+		.row
+			.col-xs-10
+				h1 #{title}  
+			.col-xs-2
+				h3 Reset  
+					a(href="/nestSearch") 
+						span
+							+icon("repeat")
+
 
 		+panel-info("Title of document")
 			p To find the title of the document, simply enter in the text box below
 			p E.g. Hooker 
 
 		form(action="/nestedSearch", method="get")
-			input(type="text",name="title",placeholder="Enter title",value=titleInput)
+			input(type="text",name="title",placeholder="Enter title")
 			input(type="submit",value="search")
 		
 		h3 OR
@@ -42,8 +54,8 @@ block body
 			p E.g. for $t in (//title) where matches($t,'hooker','i') 
 
 
-		form(action="/search", method="get")
-			input(type="text",name="Bquery",placeholder="Enter BaseX Query here", value=queryInput)
+		form(action="/nestedSearch", method="get")
+			input(type="text",name="Bquery",placeholder="Enter BaseX Query here")
 			input(type="submit",value="search")
 		
 		
@@ -57,8 +69,8 @@ block body
 			+table([],[["AND = ftand","NOT = ftnot","OR = ftor"]],"table-striped table-bordered")
 			p E.g. 'hooker' ftand 'haast'
 
-		form(action="/search", method="get")
-			input(type="text",name="text",placeholder="Enter Text here", value=textInput)
+		form(action="/nestedSearch", method="get")
+			input(type="text",name="text",placeholder="Enter Text here")
 			input(type="submit",value="search")
 		
 		br

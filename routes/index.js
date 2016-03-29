@@ -15,6 +15,7 @@ var basex = require('basex');
 var client = new basex.Session("127.0.0.1", 1984, "admin", "admin");
 
 var nestCount = 0;
+var searchText = [];
 client.execute("open Colenso");
 
 //client.execute("xquery //movie[position() lt 10]",console.log);
@@ -93,6 +94,26 @@ router.get("/download/:author/:ftype/:xml",function(req,res,next){
 		
 });
 
+router.get("/downloads",function(req,res,next){
+	if(searchText[0]){
+		for(i=0;i<searchText[0].length;i++){
+			client.execute("XQUERY declare default element namespace 'http://www.tei-c.org/ns/1.0'; " + 
+			"doc('Colenso/" + searchText[0][i] + "')",
+				function (err,xmlFile){
+					if(err){
+						console.log(err);
+					}
+					res.send(xmlFile.result);
+				  
+				}
+			);
+		}
+	}
+		
+		
+		
+});
+
 router.get("/edit/:author/:ftype/:xml",function(req,res,next){
 		var author = req.params.author;
 		var ftype = req.params.ftype;			//for params if you want to change the page
@@ -160,6 +181,7 @@ router.get("/search",function(req,res,next){
 	var Bquery = req.query.Bquery;
 	var text = req.query.text;
 	var search = [];
+	searchText = [];
 	//REGEX???: (*[matches(., "Hooker")])
 	//checks which variable is defined, and does the query that relates to the defined variable
 
@@ -196,89 +218,160 @@ router.get("/search",function(req,res,next){
   
 });
 
-// router.get("/nestedSearch",function(req,res,next){
-// 	 res.render('nsearch',{title: 'Nested Search Query'});
+router.get("/nestSearch",function(req,res,next){
+	nestCount = 0;
+	searchText = [];
+	res.render('nsearch',{title: 'Nested Search Query'});
   
-// });
+});
 
 router.get("/nestedSearch",function(req,res,next){
 	var title = req.query.title;
 	var Bquery = req.query.Bquery;
 	var text = req.query.text;
 	var directory = process.env.PWD;
+	var k = 0;
 	var search = [];
-	var searchText = [];
-	console.log("NESTED SERACH");
-	console.log(title);
-	
-	//REGEX???: (*[matches(., "Hooker")])
-	//checks which variable is defined, and does the query that relates to the defined variable
-
-	//using ftand
-	//declare default element namespace 'http://www.tei-c.org/ns/1.0'; for $t in *[.//text() contains text 'Hooker' ftand 'Haast']return db:path($t)
+	var nsearch = [];
 	if(title){
-		console.log("NESTED SERACH");
-		console.log(title);
-		client.execute("XQUERY declare default element namespace 'http://www.tei-c.org/ns/1.0'; for $t in (//title) where matches($t,'" + title + "','i') return db:path($t)",   
-		function(err,body) {  
 
-			search = body.result.match(/[^\r\n]+/g);
-			console.log("result"+search);
-			console.log("search legnth: " + search.length);
+		if(nestCount>0){
 
-			//creating raw text for every search
-			for(i = 0; i<search.length;i++){
+			client.execute("XQUERY declare default element namespace 'http://www.tei-c.org/ns/1.0'; for $t in (//title) where matches($t,'" + title + "','i') return db:path($t)",   
+			function(err,body) {  
+				search = body.result.match(/[^\r\n]+/g);
 
-				console.log("SEARCH " + i + " : " + search[i]);
-				client.execute("XQUERY declare default element namespace 'http://www.tei-c.org/ns/1.0'; " + 
-				"doc('Colenso/" + search[i] + "')",
-				function (err,xmlFile){
-					searchText[i] = xmlFile.result;		
-					console.log("searchText[" + i + "]");
-				});
-				console.log("I: " + i);
-			}
-			console.log("search TEXT legnth: " + searchText.length);
-			//creating new database
-			client.execute("CREATE DB nest" + nestCount);
-			for(i=0; i<searchText.length; i++){
-				client.execute("ADD " + searchText[i], 
-					function(err){
-						console.log(err);
+				//removing all the results that were not in the seach result previously
+				for(i=0;i<search.length;i++){
+
+					for(j=0;j<searchText[nestCount-1].length;j++){
+
+						if(search[i]==searchText[nestCount-1][j]){
+							nsearch[k] = search[i];
+							k++;
+						}
+
 					}
-				);
-			}
 
-			console.log("NEST COUNT: " + nestCount);
+				}
 
-			client.execute("XQUERY db:list('nest" + nestCount + "')",
-				function (err,body) {
-					var names = body.result.match(/[^\r\n]+/g);
-					//names.sort();
-					var author, ftype, xmlFile; 					
-					res.render('index', { title: 'ECS Video Rental', queryResult: names});	//render jade file with index.jade/
+				searchText[nestCount] = nsearch;
+
+				if(k==0){
+					searchText[nestCount] = undefined;
+				}
+
+				res.render('nsearch',{title: 'Nested Search Query: ' + nestCount, searchResult: searchText[nestCount], titleInput:title});
+				nestCount++;
+
+			});
+		} else {
+			client.execute("XQUERY declare default element namespace 'http://www.tei-c.org/ns/1.0'; for $t in (//title) where matches($t,'" + title + "','i') return db:path($t)",   
+				function(err,body) {  
+					search = body.result.match(/[^\r\n]+/g);
+					searchText[nestCount] = search;
+					res.render('nsearch',{title: 'Nested Search Query', searchResult: searchText[nestCount], titleInput:title});
+					nestCount++;
 				}
 			);
-			
-			//res.render('search',{title: 'Search Query', searchResult: search, titleInput:title});
-		});
+		}
 		
 	} else if (Bquery){
-		console.log(Bquery);
-		client.execute("XQUERY declare default element namespace 'http://www.tei-c.org/ns/1.0';" + Bquery + "return db:path($t)",   
-		function(err,body) {  
-			search = body.result.match(/[^\r\n]+/g);
-			console.log("result"+search);
-			res.render('search',{title: 'Search Query', searchResult: search, queryInput:Bquery});
-		});
+		if(nestCount>0){
+
+			client.execute("XQUERY declare default element namespace 'http://www.tei-c.org/ns/1.0';" + Bquery + "return db:path($t)",   
+			function(err,body) {  
+				search = body.result.match(/[^\r\n]+/g);
+
+				//removing all the results that were not in the seach result previously
+				for(i=0;i<search.length;i++){
+
+					for(j=0;j<searchText[nestCount-1].length;j++){
+
+						if(search[i]==searchText[nestCount-1][j]){
+							nsearch[k] = search[i];
+							k++;
+						}
+
+					}
+
+				}
+
+				searchText[nestCount] = nsearch;
+
+				if(k==0){
+					searchText[nestCount] = undefined;
+				}
+
+				res.render('nsearch',{title: 'Nested Search Query: ' + nestCount, searchResult: searchText[nestCount]});
+				nestCount++;
+
+			});
+		} else {
+			client.execute("XQUERY declare default element namespace 'http://www.tei-c.org/ns/1.0';" + Bquery + "return db:path($t)",   
+				function(err,body) {  
+					search = body.result.match(/[^\r\n]+/g);
+					searchText[nestCount] = search;
+					res.render('nsearch',{title: 'Nested Search Query', searchResult: searchText[nestCount]});
+					nestCount++;
+				}
+			);
+		}
+		// console.log(Bquery);
+		// client.execute("XQUERY declare default element namespace 'http://www.tei-c.org/ns/1.0';" + Bquery + "return db:path($t)",   
+		// function(err,body) {  
+		// 	search = body.result.match(/[^\r\n]+/g);
+		// 	console.log("result"+search);
+		// 	res.render('search',{title: 'Search Query', searchResult: search, queryInput:Bquery});
+		// });
 		
 	} else if (text){
-		console.log(text);
-		client.execute("XQUERY declare default element namespace 'http://www.tei-c.org/ns/1.0'; for $t in *[.//text() contains text " + text + "]return db:path($t)",
-		function(err,body) {  
-			search = body.result.match(/[^\r\n]+/g);
-			res.render('search',{title: 'Search Query', searchResult: search, textInput: text});
-		});
+		if(nestCount>0){
+
+			client.execute("XQUERY declare default element namespace 'http://www.tei-c.org/ns/1.0'; for $t in *[.//text() contains text " + text + "]return db:path($t)",   
+			function(err,body) {  
+				search = body.result.match(/[^\r\n]+/g);
+
+				//removing all the results that were not in the seach result previously
+				for(i=0;i<search.length;i++){
+
+					for(j=0;j<searchText[nestCount-1].length;j++){
+
+						if(search[i]==searchText[nestCount-1][j]){
+							nsearch[k] = search[i];
+							k++;
+						}
+
+					}
+
+				}
+
+				searchText[nestCount] = nsearch;
+
+				if(k==0){
+					searchText[nestCount] = undefined;
+				}
+
+				res.render('nsearch',{title: 'Nested Search Query: ' + nestCount, searchResult: searchText[nestCount]});
+				nestCount++;
+
+			});
+		} else {
+			client.execute("XQUERY declare default element namespace 'http://www.tei-c.org/ns/1.0'; for $t in *[.//text() contains text " + text + "]return db:path($t)",   
+				function(err,body) {  
+					search = body.result.match(/[^\r\n]+/g);
+					searchText[nestCount] = search;
+					res.render('nsearch',{title: 'Nested Search Query', searchResult: searchText[nestCount]});
+					nestCount++;
+				}
+			);
+		}
+		// console.log(text);
+		// client.execute("XQUERY declare default element namespace 'http://www.tei-c.org/ns/1.0'; for $t in *[.//text() contains text " + text + "]return db:path($t)",
+		// function(err,body) {  
+		// 	search = body.result.match(/[^\r\n]+/g);
+		// 	res.render('search',{title: 'Search Query', searchResult: search, textInput: text});
+		// });
 	} else {
 		res.render('nsearch',{title: 'Nested Search'});
 	}
