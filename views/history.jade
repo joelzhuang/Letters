@@ -5,7 +5,7 @@ head
 	link(rel='stylesheet', href='/stylesheets/style.css')
 block body
 	+navbar("Colenso","dropdown_menu")
-		+nav_item("/","active") Home  
+		+nav_item("/") Home  
 			span
 				+icon("home")
 		+nav_item("/search") Search  
@@ -14,7 +14,7 @@ block body
 		+nav_item("/add") Add  
 			span
 				+icon("plus")
-		+nav_item("/history") History  
+		+nav_item("/history","active") History  
 			span
 				+icon("th-list")
 	//h1 #{title}
@@ -31,11 +31,12 @@ block body
 		//list group
 		
 		
-		
-		+list-group-custom()
-			-
-			each val in queryResult
-				+list-group-item(val,"")
-					h4.list-group-item-heading=val
+		if(history[0]!=undefined)
+			+list-group-custom()
+				-
+				each val in history
+					+list-group-item(val,"")
+						h4.list-group-item-heading=val
 
-		
+		else
+			p(style="color:red;") The search history is empty :(

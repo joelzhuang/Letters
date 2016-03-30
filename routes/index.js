@@ -19,6 +19,7 @@ var client = new basex.Session("127.0.0.1", 1984, "admin", "admin");
 
 var nestCount = 0;
 var searchText = [];
+var searchHistory = [];
 client.execute("open Colenso");
 
 //client.execute("xquery //movie[position() lt 10]",console.log);
@@ -50,7 +51,7 @@ function (err,body) {
 		}
 	} **/
 	
-	res.render('index', { title: 'ECS Video Rental', queryResult: names});	//render jade file with index.jade/
+	res.render('index', { title: 'Letters', queryResult: names});	//render jade file with index.jade/
 }
 );
 });
@@ -71,7 +72,9 @@ router.get("/:author/:ftype/:xml", function(req, res, next){
 			if(err){
 				console.log(err);
 			}
-			res.render('file',{ title: 'file', queryResult: xmlFile.result, downLink:url});
+			var name = xmlFile.result.match(/<title>(.*?)<\/title>/);
+			name = name[1];
+			res.render('file',{fileName:name,queryResult: xmlFile.result, downLink:url});
 		  
 		});
 		
@@ -183,7 +186,9 @@ router.post("/save/:author/:ftype/:xml",function(req,res,next){
 			if(err){
 				console.log(err);
 			}
-			res.render('file',{ title: 'file', queryResult: xmlFile.result, downLink:url});
+			var name = xmlFile.result.match(/<title>(.*?)<\/title>/);
+			name = name[1];
+			res.render('file',{fileName: name, queryResult: xmlFile.result, downLink:url});
 		  
 		});
 		
@@ -206,7 +211,10 @@ router.get("/search",function(req,res,next){
 		client.execute("XQUERY declare default element namespace 'http://www.tei-c.org/ns/1.0'; for $t in (//title) where matches($t,'" + title + "','i') return db:path($t)",   
 		function(err,body) {  
 			search = body.result.match(/[^\r\n]+/g);
-			console.log("result"+search);
+			for(i=0;i<search.length;i++){
+				searchHistory.push(search[i]);
+			}
+			
 			res.render('search',{title: 'Search Query', searchResult: search, titleInput:title});
 		});
 		
@@ -215,7 +223,9 @@ router.get("/search",function(req,res,next){
 		client.execute("XQUERY declare default element namespace 'http://www.tei-c.org/ns/1.0';" + Bquery + "return db:path($t)",   
 		function(err,body) {  
 			search = body.result.match(/[^\r\n]+/g);
-			console.log("result"+search);
+			for(i=0;i<search.length;i++){
+				searchHistory.push(search[i]);
+			}
 			res.render('search',{title: 'Search Query', searchResult: search, queryInput:Bquery});
 		});
 		
@@ -224,6 +234,9 @@ router.get("/search",function(req,res,next){
 		client.execute("XQUERY declare default element namespace 'http://www.tei-c.org/ns/1.0'; for $t in *[.//text() contains text " + text + "]return db:path($t)",
 		function(err,body) {  
 			search = body.result.match(/[^\r\n]+/g);
+			for(i=0;i<search.length;i++){
+				searchHistory.push(search[i]);
+			}
 			res.render('search',{title: 'Search Query', searchResult: search, textInput: text});
 		});
 	} else {
@@ -283,11 +296,15 @@ router.get("/nestedSearch",function(req,res,next){
 			client.execute("XQUERY declare default element namespace 'http://www.tei-c.org/ns/1.0'; for $t in (//title) where matches($t,'" + title + "','i') return db:path($t)",   
 				function(err,body) {  
 					search = body.result.match(/[^\r\n]+/g);
+					for(i=0;i<search.length;i++){
+						searchHistory.push(search[i]);
+					}
 					searchText[nestCount] = search;
 					res.render('nsearch',{title: 'Nested Search Query', searchResult: searchText[nestCount], titleInput:title});
 					nestCount++;
 				}
 			);
+
 		}
 		
 	} else if (Bquery){
@@ -325,6 +342,9 @@ router.get("/nestedSearch",function(req,res,next){
 			client.execute("XQUERY declare default element namespace 'http://www.tei-c.org/ns/1.0';" + Bquery + "return db:path($t)",   
 				function(err,body) {  
 					search = body.result.match(/[^\r\n]+/g);
+					for(i=0;i<search.length;i++){
+						searchHistory.push(search[i]);
+					}
 					searchText[nestCount] = search;
 					res.render('nsearch',{title: 'Nested Search Query', searchResult: searchText[nestCount]});
 					nestCount++;
@@ -374,6 +394,9 @@ router.get("/nestedSearch",function(req,res,next){
 			client.execute("XQUERY declare default element namespace 'http://www.tei-c.org/ns/1.0'; for $t in *[.//text() contains text " + text + "]return db:path($t)",   
 				function(err,body) {  
 					search = body.result.match(/[^\r\n]+/g);
+					for(i=0;i<search.length;i++){
+						searchHistory.push(search[i]);
+					}
 					searchText[nestCount] = search;
 					res.render('nsearch',{title: 'Nested Search Query', searchResult: searchText[nestCount]});
 					nestCount++;
@@ -393,7 +416,9 @@ router.get("/nestedSearch",function(req,res,next){
 });
 
 
-
+router.get("/history",function(req,res,next){
+	res.render('history',{title: "History of Search Results",history:searchHistory});
+});
 
 router.get("/add",function(req,res,next){
 	 res.render('add',{title: 'Add XML Document'});
