@@ -6,6 +6,9 @@ var upload = multer({dest: './uploads'});
 //for renaming files
 var fs = require('fs');
 
+//zip file 
+var zip = new require('node-zip')();
+
 var express = require('express');
 var router = express.Router();
 
@@ -95,22 +98,33 @@ router.get("/download/:author/:ftype/:xml",function(req,res,next){
 });
 
 router.get("/downloads",function(req,res,next){
+	var result;
 	if(searchText[0]){
 		for(i=0;i<searchText[0].length;i++){
+
 			client.execute("XQUERY declare default element namespace 'http://www.tei-c.org/ns/1.0'; " + 
 			"doc('Colenso/" + searchText[0][i] + "')",
 				function (err,xmlFile){
 					if(err){
 						console.log(err);
 					}
-					res.send(xmlFile.result);
+					result = xmlFile.result;
+					//res.send(xmlFile.result);
 				  
 				}
 			);
+			var name = searchText[0][i].split("/");
+			zip.file(name[2],result);
 		}
+		var data = zip.generate({base64:false,compression:'DEFLATE'});
+		fs.writeFileSync('letters.zip',data,'binary');
+		fs.rename('letters.zip','public/letters.zip');
+	
+		res.render('fileDownload',{ title: 'File Download', searchResult: searchText[0]});
+	}else {
+		res.render('nsearch',{title: 'Nested Search Query: ' + nestCount, searchResult: searchText[nestCount]});
 	}
-		
-		
+	
 		
 });
 

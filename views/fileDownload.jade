@@ -1,0 +1,40 @@
+extends ../node_modules/jade-bootstrap/_bootstrap
+
+head
+	title=title
+	link(rel='stylesheet', href='/stylesheets/style.css')
+block body
+	+navbar("Colenso","dropdown_menu")
+		+nav_item("/","active") Home  
+			span
+				+icon("home")
+		+nav_item("/search") Search  
+			span
+				+icon("search")
+		+nav_item("/add") Add  
+			span
+				+icon("plus")
+	//h1 #{title}
+	//p Welcome to #{title}. 
+		//|We have an excellent collection of videos in stock for you.
+
+	
+
+	.container
+		h1 #{title}
+
+		.container
+				
+		h3
+			span 
+				+icon("download")
+				a(href="/letters.zip") Download All	
+
+		
+		h3 Results
+		+list-group-custom()
+			-
+			each val in searchResult
+				+list-group-item(val,"")
+					h4.list-group-item-heading=val	
+			
